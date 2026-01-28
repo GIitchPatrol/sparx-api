@@ -8,7 +8,7 @@ app.use(express.json());
 let jobQueue = [];
 let jobResults = {};
 
-// API endpoint - receives requests and queues them
+// API endpoint - receives requests and waits for completion
 app.post('/api/sparx-login', async (req, res) => {
     const { schoolName, username, password } = req.body;
 
@@ -30,10 +30,31 @@ app.post('/api/sparx-login', async (req, res) => {
         timestamp: new Date()
     });
 
-    res.json({ 
-        success: true,
-        jobId: jobId,
-        message: 'Job queued. Check status at /api/status/' + jobId
+    // Wait for result (timeout after 2 minutes)
+    const maxWaitTime = 120000; // 2 minutes
+    const checkInterval = 1000; // Check every second
+    let waited = 0;
+
+    while (waited < maxWaitTime) {
+        // Check if result is available
+        if (jobResults[jobId]) {
+            const result = jobResults[jobId];
+            return res.json({
+                success: result.success,
+                message: result.success ? 'Login successful!' : 'Login failed',
+                error: result.error || null
+            });
+        }
+
+        // Wait 1 second before checking again
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        waited += checkInterval;
+    }
+
+    // Timeout
+    res.status(408).json({
+        success: false,
+        message: 'Login timed out. Worker may not be running.'
     });
 });
 
