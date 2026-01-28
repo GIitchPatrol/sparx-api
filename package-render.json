@@ -1,0 +1,15 @@
+{
+  "name": "sparx-api",
+  "version": "1.0.0",
+  "description": "Sparx Login API hosted on Render",
+  "main": "render-api-server.js",
+  "scripts": {
+    "start": "node render-api-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
