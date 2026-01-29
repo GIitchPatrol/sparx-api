@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 app.use(express.json());
 
 let jobQueue = [];
@@ -22,12 +23,13 @@ function isWorkerOnline() {
 
 app.post('/api/sparx-login', async (req, res) => {
     const { schoolName, username, password } = req.body;
+    
     if (!schoolName || !username || !password) {
         return res.status(400).json({ 
             error: 'Missing required fields: schoolName, username, password' 
         });
     }
-
+    
     // Check if worker is online IMMEDIATELY
     if (!isWorkerOnline()) {
         return res.status(503).json({
@@ -57,7 +59,8 @@ app.post('/api/sparx-login', async (req, res) => {
             return res.json({
                 success: result.success,
                 message: result.success ? 'Login successful!' : 'Login failed',
-                error: result.error || null
+                error: result.error || null,
+                homeworks: result.homeworks || []
             });
         }
         await new Promise(resolve => setTimeout(resolve, checkInterval));
@@ -68,7 +71,8 @@ app.post('/api/sparx-login', async (req, res) => {
     
     res.status(408).json({
         success: false,
-        message: 'Login timed out.'
+        message: 'Login timed out.',
+        homeworks: []
     });
 });
 
@@ -92,11 +96,12 @@ app.get('/api/get-job', (req, res) => {
 });
 
 app.post('/api/report-result', (req, res) => {
-    const { jobId, success, error } = req.body;
+    const { jobId, success, error, homeworks } = req.body;
     
     jobResults[jobId] = {
         success,
         error,
+        homeworks: homeworks || [],
         completedAt: new Date()
     };
     
@@ -121,6 +126,7 @@ app.get('/api/status/:jobId', (req, res) => {
             status: 'completed', 
             success: result.success,
             error: result.error,
+            homeworks: result.homeworks || [],
             completedAt: result.completedAt
         });
     }
