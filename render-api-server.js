@@ -48,7 +48,7 @@ app.post('/api/sparx-login', async (req, res) => {
         timestamp: new Date()
     });
     
-    const maxWaitTime = 40000; // 40 seconds (bit more than Discord's 30s)
+    const maxWaitTime = 60000; // 60 seconds
     const checkInterval = 1000;
     let waited = 0;
     
